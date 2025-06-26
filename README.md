@@ -8,9 +8,12 @@ This is a lightweight, browser-based tool for creating and managing task-specifi
 
 ## 📁 Project Structure
 
-├── index.html # Main HTML file
-├── style.css # Stylesheet
-└── script.js # JavaScript functionality
+```text
+.
+├── index.html      # Main HTML file
+├── style.css       # Stylesheet
+└── script.js       # JavaScript functionality
+```
 
 ## ✨ Features
 
@@ -34,11 +37,11 @@ To run locally:
 ```bash
 git clone https://github.com/devon-gosine/risk-assessment-tool.git
 cd risk-assessment-tool
-# Open index.html in your browser
+# Then open index.html in your browser
 ```
 
-Or simply drag index.html into any modern web browser.
+Or simply drag `index.html` into any modern web browser.
 
 ## 📄 License
 
-This project is open source and available under the MIT License.
+This project is open source and available under the [MIT License](LICENSE).
