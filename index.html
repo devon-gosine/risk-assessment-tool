@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Assessment Tool</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Task-Based Risk Assessment</h1>
+    <div class="task-controls">
+      <h3>Create New Task</h3>
+      <textarea id="taskDesc" placeholder="Describe the task..."></textarea>
+      <button onclick="addTask()">Add Task</button>
+      <button onclick="exportToJSON()">Export</button>
+    </div>
+    <table id="assessmentTable">
+      <thead>
+        <tr>
+          <th>Task #</th>
+          <th>Description<br><small>Actions</small></th>
+          <th>Hazards<br><small>Actions</small></th>
+          <th>Initial Risk</th>
+          <th>Controls<br><small>Actions</small></th>
+          <th>Residual Risk</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
