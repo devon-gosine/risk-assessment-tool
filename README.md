@@ -35,6 +35,9 @@ To run locally:
 git clone https://github.com/devon-gosine/risk-assessment-tool.git
 cd risk-assessment-tool
 # Open index.html in your browser
+```
+
+Or simply drag index.html into any modern web browser.
 
 ## 📄 License
 
