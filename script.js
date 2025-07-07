@@ -10,6 +10,22 @@ const riskMatrix = {
 let tasks = [];
 let currentTaskId = 1;
 
+function saveTasks() {
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function loadTasks() {
+  const data = localStorage.getItem('tasks');
+  if (data) {
+    try {
+      tasks = JSON.parse(data);
+      currentTaskId = tasks.reduce((max, t) => Math.max(max, t.id), 0) + 1;
+    } catch (e) {
+      console.error('Error parsing stored tasks', e);
+    }
+  }
+}
+
 function addTask() {
   const desc = document.getElementById('taskDesc').value.trim();
   if (!desc) return;
@@ -111,6 +127,7 @@ function renderTable() {
     `;
     tbody.appendChild(inputRow);
   });
+  saveTasks();
 }
 
 
@@ -122,7 +139,31 @@ function exportToJSON() {
   link.click();
 }
 
-window.onload = renderTable;
+function importFromJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) {
+        tasks = data;
+        currentTaskId = tasks.reduce((m, t) => Math.max(m, t.id), 0) + 1;
+        renderTable();
+      }
+    } catch (err) {
+      alert('Invalid JSON file');
+    }
+  };
+  reader.readAsText(file);
+  // reset the input so selecting the same file again triggers change
+  event.target.value = '';
+}
+
+window.onload = () => {
+  loadTasks();
+  renderTable();
+};
 
 
 
