@@ -68,6 +68,11 @@ function getRiskClass(severity, likelihood) {
   return level.toLowerCase() + '-risk';
 }
 
+function getRiskLevel(severity, likelihood) {
+  const key = severity + likelihood;
+  return riskMatrix[key] || 'Low';
+}
+
 function renderTable() {
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
@@ -185,8 +190,8 @@ function renderHazardCols(taskId, hazard) {
   return `
     <td>
       <span id="hazard-desc-${hazard.id}">${hazard.description}</span><br/>
-      <button onclick="editHazard(${taskId}, ${hazard.id})">✏️</button>
-      <button onclick="deleteHazard(${taskId}, ${hazard.id})">🗑️</button>
+      <button onclick="editHazard(${taskId}, ${hazard.id})" aria-label="Edit hazard">✏️</button>
+      <button onclick="deleteHazard(${taskId}, ${hazard.id})" aria-label="Delete hazard">🗑️</button>
     </td>
     <td>
       <select onchange="updateRisk(${taskId}, ${hazard.id}, 'initSeverity', this.value)">
@@ -195,13 +200,13 @@ function renderHazardCols(taskId, hazard) {
       <select onchange="updateRisk(${taskId}, ${hazard.id}, 'initLikelihood', this.value)">
         ${['A','B','C','D','E'].map(l => `<option value="${l}" ${l==hazard.initLikelihood?'selected':''}>${l}</option>`).join('')}
       </select>
-      <span class="risk-tag ${getRiskClass(hazard.initSeverity, hazard.initLikelihood)}">${hazard.initSeverity}${hazard.initLikelihood}</span>
+      <span class="risk-tag ${getRiskClass(hazard.initSeverity, hazard.initLikelihood)}" aria-label="${getRiskLevel(hazard.initSeverity, hazard.initLikelihood)} Risk">${hazard.initSeverity}${hazard.initLikelihood}</span>
     </td>
     <td>
       <button onclick="toggleControls(${taskId}, ${hazard.id})">${hazard.expanded ? 'Hide' : 'Show'} Controls</button>
       ${hazard.expanded ? `
       <ul class="controls-list">
-        ${hazard.controls.map((c, i) => `<li>${c} <button onclick="editControl(${taskId},${hazard.id},${i})">✏️</button> <button onclick="deleteControl(${taskId},${hazard.id},${i})">🗑️</button></li>`).join('')}
+        ${hazard.controls.map((c, i) => `<li>${c} <button onclick="editControl(${taskId},${hazard.id},${i})" aria-label="Edit control">✏️</button> <button onclick="deleteControl(${taskId},${hazard.id},${i})" aria-label="Delete control">🗑️</button></li>`).join('')}
       </ul>
       <input id="control-${taskId}-${hazard.id}" placeholder="Add control measure" />
       <button onclick="addControl(${taskId}, ${hazard.id})">Add Control</button>
@@ -214,7 +219,7 @@ function renderHazardCols(taskId, hazard) {
       <select onchange="updateResidualRisk(${taskId}, ${hazard.id}, 'likelihood', this.value)">
         ${['A','B','C','D','E'].map(l => `<option value="${l}" ${l==hazard.residualLikelihood?'selected':''}>${l}</option>`).join('')}
       </select>
-      <span class="risk-tag ${getRiskClass(hazard.residualSeverity, hazard.residualLikelihood)}">${hazard.residualSeverity}${hazard.residualLikelihood}</span>
+      <span class="risk-tag ${getRiskClass(hazard.residualSeverity, hazard.residualLikelihood)}" aria-label="${getRiskLevel(hazard.residualSeverity, hazard.residualLikelihood)} Risk">${hazard.residualSeverity}${hazard.residualLikelihood}</span>
     </td>
   `;
 }
