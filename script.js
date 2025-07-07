@@ -84,14 +84,17 @@ function renderTable() {
     `;
     if (task.hazards.length > 0) {
       const first = task.hazards[0];
-      taskRow.innerHTML += renderHazardCols(task.id, first);
+      renderHazardCols(task.id, first).forEach(cell => taskRow.appendChild(cell));
     } else {
-      taskRow.innerHTML += '<td colspan="4">No hazards identified</td>';
+      const empty = document.createElement('td');
+      empty.colSpan = 4;
+      empty.textContent = 'No hazards identified';
+      taskRow.appendChild(empty);
     }
     tbody.appendChild(taskRow);
     task.hazards.slice(1).forEach(h => {
       const row = document.createElement('tr');
-      row.innerHTML = renderHazardCols(task.id, h);
+      renderHazardCols(task.id, h).forEach(cell => row.appendChild(cell));
       tbody.appendChild(row);
     });
     const inputRow = document.createElement('tr');
@@ -187,39 +190,127 @@ function updateRisk(taskId, hazardId, type, value) {
 
 // Updated renderHazardCols with editable dropdowns
 function renderHazardCols(taskId, hazard) {
-  return `
-    <td>
-      <span id="hazard-desc-${hazard.id}">${hazard.description}</span><br/>
-      <button onclick="editHazard(${taskId}, ${hazard.id})" aria-label="Edit hazard">✏️</button>
-      <button onclick="deleteHazard(${taskId}, ${hazard.id})" aria-label="Delete hazard">🗑️</button>
-    </td>
-    <td>
-      <select onchange="updateRisk(${taskId}, ${hazard.id}, 'initSeverity', this.value)">
-        ${[1,2,3,4,5].map(n => `<option value="${n}" ${n==hazard.initSeverity?'selected':''}>${n}</option>`).join('')}
-      </select>
-      <select onchange="updateRisk(${taskId}, ${hazard.id}, 'initLikelihood', this.value)">
-        ${['A','B','C','D','E'].map(l => `<option value="${l}" ${l==hazard.initLikelihood?'selected':''}>${l}</option>`).join('')}
-      </select>
-      <span class="risk-tag ${getRiskClass(hazard.initSeverity, hazard.initLikelihood)}" aria-label="${getRiskLevel(hazard.initSeverity, hazard.initLikelihood)} Risk">${hazard.initSeverity}${hazard.initLikelihood}</span>
-    </td>
-    <td>
-      <button onclick="toggleControls(${taskId}, ${hazard.id})">${hazard.expanded ? 'Hide' : 'Show'} Controls</button>
-      ${hazard.expanded ? `
-      <ul class="controls-list">
-        ${hazard.controls.map((c, i) => `<li>${c} <button onclick="editControl(${taskId},${hazard.id},${i})" aria-label="Edit control">✏️</button> <button onclick="deleteControl(${taskId},${hazard.id},${i})" aria-label="Delete control">🗑️</button></li>`).join('')}
-      </ul>
-      <input id="control-${taskId}-${hazard.id}" placeholder="Add control measure" />
-      <button onclick="addControl(${taskId}, ${hazard.id})">Add Control</button>
-      ` : ''}
-    </td>
-    <td>
-      <select onchange="updateResidualRisk(${taskId}, ${hazard.id}, 'severity', this.value)">
-        ${[1,2,3,4,5].map(n => `<option value="${n}" ${n==hazard.residualSeverity?'selected':''}>${n}</option>`).join('')}
-      </select>
-      <select onchange="updateResidualRisk(${taskId}, ${hazard.id}, 'likelihood', this.value)">
-        ${['A','B','C','D','E'].map(l => `<option value="${l}" ${l==hazard.residualLikelihood?'selected':''}>${l}</option>`).join('')}
-      </select>
-      <span class="risk-tag ${getRiskClass(hazard.residualSeverity, hazard.residualLikelihood)}" aria-label="${getRiskLevel(hazard.residualSeverity, hazard.residualLikelihood)} Risk">${hazard.residualSeverity}${hazard.residualLikelihood}</span>
-    </td>
-  `;
+  const descTd = document.createElement('td');
+  const descSpan = document.createElement('span');
+  descSpan.id = `hazard-desc-${hazard.id}`;
+  descSpan.textContent = hazard.description;
+  descTd.appendChild(descSpan);
+  descTd.appendChild(document.createElement('br'));
+
+  const editBtn = document.createElement('button');
+  editBtn.textContent = '✏️';
+  editBtn.setAttribute('aria-label', 'Edit hazard');
+  editBtn.onclick = () => editHazard(taskId, hazard.id);
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = '🗑️';
+  deleteBtn.setAttribute('aria-label', 'Delete hazard');
+  deleteBtn.onclick = () => deleteHazard(taskId, hazard.id);
+
+  descTd.appendChild(editBtn);
+  descTd.appendChild(deleteBtn);
+
+  const initTd = document.createElement('td');
+  const sevSelect = document.createElement('select');
+  sevSelect.onchange = function() { updateRisk(taskId, hazard.id, 'initSeverity', this.value); };
+  [1,2,3,4,5].forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    opt.textContent = n;
+    if (n == hazard.initSeverity) opt.selected = true;
+    sevSelect.appendChild(opt);
+  });
+
+  const likeSelect = document.createElement('select');
+  likeSelect.onchange = function() { updateRisk(taskId, hazard.id, 'initLikelihood', this.value); };
+  ['A','B','C','D','E'].forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    if (l == hazard.initLikelihood) opt.selected = true;
+    likeSelect.appendChild(opt);
+  });
+
+  const initSpan = document.createElement('span');
+  initSpan.className = 'risk-tag ' + getRiskClass(hazard.initSeverity, hazard.initLikelihood);
+  initSpan.setAttribute('aria-label', getRiskLevel(hazard.initSeverity, hazard.initLikelihood) + ' Risk');
+  initSpan.textContent = hazard.initSeverity + hazard.initLikelihood;
+
+  initTd.appendChild(sevSelect);
+  initTd.appendChild(likeSelect);
+  initTd.appendChild(initSpan);
+
+  const controlsTd = document.createElement('td');
+  const toggleBtn = document.createElement('button');
+  toggleBtn.textContent = hazard.expanded ? 'Hide Controls' : 'Show Controls';
+  toggleBtn.onclick = () => toggleControls(taskId, hazard.id);
+  controlsTd.appendChild(toggleBtn);
+
+  if (hazard.expanded) {
+    const ul = document.createElement('ul');
+    ul.className = 'controls-list';
+    hazard.controls.forEach((c, i) => {
+      const li = document.createElement('li');
+      const text = document.createTextNode(c);
+      li.appendChild(text);
+
+      const editC = document.createElement('button');
+      editC.textContent = '✏️';
+      editC.setAttribute('aria-label', 'Edit control');
+      editC.onclick = () => editControl(taskId, hazard.id, i);
+
+      const delC = document.createElement('button');
+      delC.textContent = '🗑️';
+      delC.setAttribute('aria-label', 'Delete control');
+      delC.onclick = () => deleteControl(taskId, hazard.id, i);
+
+      li.appendChild(editC);
+      li.appendChild(delC);
+      ul.appendChild(li);
+    });
+
+    const input = document.createElement('input');
+    input.id = `control-${taskId}-${hazard.id}`;
+    input.placeholder = 'Add control measure';
+
+    const addBtn = document.createElement('button');
+    addBtn.textContent = 'Add Control';
+    addBtn.onclick = () => addControl(taskId, hazard.id);
+
+    controlsTd.appendChild(ul);
+    controlsTd.appendChild(input);
+    controlsTd.appendChild(addBtn);
+  }
+
+  const resTd = document.createElement('td');
+  const resSev = document.createElement('select');
+  resSev.onchange = function() { updateResidualRisk(taskId, hazard.id, 'severity', this.value); };
+  [1,2,3,4,5].forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    opt.textContent = n;
+    if (n == hazard.residualSeverity) opt.selected = true;
+    resSev.appendChild(opt);
+  });
+
+  const resLike = document.createElement('select');
+  resLike.onchange = function() { updateResidualRisk(taskId, hazard.id, 'likelihood', this.value); };
+  ['A','B','C','D','E'].forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l;
+    opt.textContent = l;
+    if (l == hazard.residualLikelihood) opt.selected = true;
+    resLike.appendChild(opt);
+  });
+
+  const resSpan = document.createElement('span');
+  resSpan.className = 'risk-tag ' + getRiskClass(hazard.residualSeverity, hazard.residualLikelihood);
+  resSpan.setAttribute('aria-label', getRiskLevel(hazard.residualSeverity, hazard.residualLikelihood) + ' Risk');
+  resSpan.textContent = hazard.residualSeverity + hazard.residualLikelihood;
+
+  resTd.appendChild(resSev);
+  resTd.appendChild(resLike);
+  resTd.appendChild(resSpan);
+
+  return [descTd, initTd, controlsTd, resTd];
 }
