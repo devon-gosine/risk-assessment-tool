@@ -106,6 +106,8 @@
       <textarea id="taskDesc" placeholder="Describe the task..." aria-label="Task Description"></textarea>
       <button onclick="addTask()">Add Task</button>
       <button onclick="exportToJSON()">Export</button>
+      <button onclick="document.getElementById('importFile').click()">Import</button>
+      <input type="file" id="importFile" accept="application/json" onchange="importFromJSON(event)" style="display:none" />
     </div>
     <table id="assessmentTable">
       <thead>
