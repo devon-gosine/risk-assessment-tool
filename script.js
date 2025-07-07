@@ -105,27 +105,6 @@ function renderTable() {
   });
 }
 
-function renderHazardCols(taskId, hazard) {
-  return `
-    <td>${hazard.description}</td>
-    <td><span class="risk-tag ${getRiskClass(hazard.initSeverity, hazard.initLikelihood)}">${hazard.initSeverity}${hazard.initLikelihood}</span></td>
-    <td>
-      <button onclick="toggleControls(${taskId}, ${hazard.id})">${hazard.expanded ? 'Hide' : 'Show'} Controls</button>
-      ${hazard.expanded ? `
-      <ul class="controls-list">${hazard.controls.map(c => `<li>${c}</li>`).join('')}</ul>
-      <input id="control-${taskId}-${hazard.id}" placeholder="Add control measure" />
-      <button onclick="addControl(${taskId}, ${hazard.id})">Add Control</button>
-      ` : ''}
-    </td>
-    <td>
-      <div class="risk-selectors">
-        <select onchange="updateResidualRisk(${taskId}, ${hazard.id}, 'severity', this.value)">${[1,2,3,4,5].map(n => `<option value="${n}" ${n==hazard.residualSeverity?'selected':''}>${n}</option>`).join('')}</select>
-        <select onchange="updateResidualRisk(${taskId}, ${hazard.id}, 'likelihood', this.value)">${['A','B','C','D','E'].map(l => `<option value="${l}" ${l==hazard.residualLikelihood?'selected':''}>${l}</option>`).join('')}</select>
-      </div>
-      <span class="risk-tag ${getRiskClass(hazard.residualSeverity, hazard.residualLikelihood)}">${hazard.residualSeverity}${hazard.residualLikelihood}</span>
-    </td>
-  `;
-}
 
 function exportToJSON() {
   const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
